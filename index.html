@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Electricity Bill Management System – Live Demo</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3f5f7;--surface:#fff;--ink:#16202c;--muted:#5d6b7a;--line:#d5dce3;--accent:#0f4c81;--accent-ink:#fff;--warn:#b42318;--warn-bg:#fdecea;--ok:#0a6b3d;--ok-bg:#e4f5ec;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--surface:#18212b;--ink:#e8edf2;--muted:#96a3b1;--line:#2b3846;--accent:#6db3ec;--accent-ink:#0a1622;--warn:#ff8f84;--warn-bg:#3a1b19;--ok:#6fdca0;--ok-bg:#12301f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161d;--surface:#18212b;--ink:#e8edf2;--muted:#96a3b1;--line:#2b3846;--accent:#6db3ec;--accent-ink:#0a1622;--warn:#ff8f84;--warn-bg:#3a1b19;--ok:#6fdca0;--ok-bg:#12301f;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 16px;max-width:60ch}
+#alert{padding:10px 14px;border-radius:8px;font-weight:600;margin-bottom:16px;border:1px solid var(--line);background:var(--ok-bg);color:var(--ok)}
+#alert.bad{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:16px}
+nav button{flex:none;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:10px 14px;font:inherit;cursor:pointer}
+nav button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+section.on{display:block}
+h2{font-size:1.1rem;margin:0 0 12px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;margin-bottom:16px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;color:var(--muted)}
+input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%}
+.btn{font:inherit;font-weight:600;padding:10px 16px;border:0;border-radius:6px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+.msg{margin:10px 0 0;padding:10px 12px;border-radius:6px;display:none}
+.msg.show{display:block}.msg.ok{background:var(--ok-bg);color:var(--ok)}.msg.err{background:var(--warn-bg);color:var(--warn)}
+.empty{color:var(--muted);padding:12px 0}
+.tariff{margin-top:18px;font-size:.88rem;color:var(--muted)}
+footer{margin-top:20px;color:var(--muted);font-size:.85rem;max-width:70ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Electricity Bill Management System</h1>
+<p class="sub">Web demo of the Java Swing + MySQL project. Data is stored only in this browser.</p>
+<div id="alert" role="status"></div>
+<nav role="tablist" id="tabs"></nav>
+
+<section id="p0"><h2>Register a consumer</h2>
+<form id="f0"><label>Name<input id="cn" required maxlength="60"></label>
+<label>Address<input id="ca" maxlength="120"></label>
+<label>Phone<input id="cp" inputmode="numeric" maxlength="15"></label>
+<label>Type<select id="ct"><option>DOMESTIC</option><option>COMMERCIAL</option></select></label>
+<button class="btn">Register</button></form><div class="msg" id="m0"></div><div class="scroll" id="t0"></div></section>
+
+<section id="p1"><h2>Enter a meter reading</h2>
+<form id="f1"><label>Consumer<select id="rc"></select></label>
+<label>Previous reading<input id="rp" readonly></label>
+<label>Current reading<input id="rn" type="number" required></label>
+<button class="btn">Save reading</button></form><div class="msg" id="m1"></div></section>
+
+<section id="p2"><h2>Calculate a bill</h2>
+<form id="f2"><label>Pending reading<select id="bs"></select></label><button class="btn">Calculate bill</button></form>
+<div class="msg" id="m2"></div>
+<div class="tariff">Domestic: ₹50 fixed + ₹3 (first 100 units), ₹5 (101–300), ₹7 (above 300). Commercial: ₹150 fixed + ₹6, ₹8, ₹10. Due date is 15 days after the bill date.</div></section>
+
+<section id="p3"><h2>Record a payment</h2>
+<form id="f3"><label>Unpaid bill<select id="ps"></select></label><button class="btn">Record payment</button></form>
+<div class="msg" id="m3"></div></section>
+
+<section id="p4"><h2>Defaulters</h2><div class="scroll" id="t4"></div></section>
+
+<footer>This page re-creates the five modules of the desktop app: the same slab rates, the same reading checks (negative or lower than previous is rejected) and the same overdue rule. The original Java source is on GitHub.</footer>
+</div>
+<script>
+var KEY="ebms-demo-v1",D;
+function iso(n){var d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function seed(){return{c:[{id:1,name:"Ravi Kumar",addr:"12 Model Town, Ludhiana",ph:"9876500001",type:"DOMESTIC"},{id:2,name:"Sharma Traders",addr:"Shop 4, Chaura Bazar",ph:"9876500002",type:"COMMERCIAL"}],
+r:[{id:1,cid:1,date:iso(-40),prev:0,cur:180}],b:[{id:1,cid:1,rid:1,units:180,amt:750,bdate:iso(-40),due:iso(-25),paid:null}]}}
+try{D=JSON.parse(localStorage.getItem(KEY))}catch(e){D=null}
+if(!D||!D.c)D=seed();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function nid(a){return a.reduce(function(m,x){return Math.max(m,x.id)},0)+1}
+function cname(id){var c=D.c.find(function(x){return x.id==id});return c?c.name:"?"}
+function msg(id,t,ok){var m=$(id);m.textContent=t;m.className="msg show "+(ok?"ok":"err")}
+function slab(type,u){var f=type=="DOMESTIC"?[50,3,5,7]:[150,6,8,10];return f[0]+Math.min(u,100)*f[1]+Math.max(Math.min(u,300)-100,0)*f[2]+Math.max(u-300,0)*f[3]}
+function table(h,rows){if(!rows.length)return'<p class="empty">Nothing here yet.</p>';return'<table><tr>'+h.map(function(x){return"<th>"+x+"</th>"}).join("")+"</tr>"+rows.map(function(r){return"<tr>"+r.map(function(x){return"<td>"+x+"</td>"}).join("")+"</tr>"}).join("")+"</table>"}
+function overdue(){var t=iso(0);return D.b.filter(function(b){return!b.paid&&b.due<t})}
+function days(d){return Math.round((new Date(iso(0))-new Date(d))/864e5)}
+function render(){
+ $("t0").innerHTML=table(["ID","Name","Type","Address","Phone"],D.c.map(function(c){return[c.id,esc(c.name),c.type,esc(c.addr),esc(c.ph)]}));
+ var opts=D.c.map(function(c){return'<option value="'+c.id+'">'+c.id+" – "+esc(c.name)+" ("+c.type+")</option>"}).join("");
+ var keep=$("rc").value;$("rc").innerHTML=opts;if(keep)$("rc").value=keep;lastR();
+ var pend=D.r.filter(function(r){return!D.b.some(function(b){return b.rid==r.id})});
+ $("bs").innerHTML=pend.length?pend.map(function(r){return'<option value="'+r.id+'">Reading #'+r.id+" – "+esc(cname(r.cid))+" – "+(r.cur-r.prev)+" units</option>"}).join(""):'<option value="">No pending readings</option>';
+ var up=D.b.filter(function(b){return!b.paid});
+ $("ps").innerHTML=up.length?up.map(function(b){return'<option value="'+b.id+'">Bill #'+b.id+" – "+esc(cname(b.cid))+" – ₹"+b.amt.toFixed(2)+" (due "+b.due+")</option>"}).join(""):'<option value="">No unpaid bills</option>';
+ var o=overdue();
+ $("t4").innerHTML=table(["Consumer ID","Name","Bill #","Amount (₹)","Due date","Days overdue"],o.map(function(b){return[b.cid,esc(cname(b.cid)),b.id,b.amt.toFixed(2),b.due,days(b.due)]}));
+ var a=$("alert");a.className=o.length?"bad":"";a.textContent=o.length?"Alert: "+o.length+" bill(s) are past their due date.":"No overdue bills."}
+function lastR(){var id=+$("rc").value,l=D.r.filter(function(r){return r.cid==id}).pop();$("rp").value=l?l.cur:0}
+$("rc").onchange=lastR;
+$("f0").onsubmit=function(e){e.preventDefault();var n=$("cn").value.trim();if(!n)return msg("m0","Enter the consumer’s name.",0);
+ var id=nid(D.c);D.c.push({id:id,name:n,addr:$("ca").value.trim(),ph:$("cp").value.trim(),type:$("ct").value});save();render();this.reset();msg("m0","Consumer registered with ID "+id+".",1)};
+$("f1").onsubmit=function(e){e.preventDefault();var id=+$("rc").value,p=+$("rp").value,c=+$("rn").value;
+ if(c<0)return msg("m1","Invalid reading: reading cannot be negative.",0);
+ if(c<p)return msg("m1","Invalid reading: current reading ("+c+") is less than previous reading ("+p+").",0);
+ var rid=nid(D.r);D.r.push({id:rid,cid:id,date:iso(0),prev:p,cur:c});save();render();$("rn").value="";msg("m1","Reading #"+rid+" saved ("+(c-p)+" units). Go to Bill Calculation next.",1)};
+$("f2").onsubmit=function(e){e.preventDefault();var rid=+$("bs").value;if(!rid)return msg("m2","Save a meter reading first.",0);
+ var r=D.r.find(function(x){return x.id==rid}),c=D.c.find(function(x){return x.id==r.cid}),u=r.cur-r.prev,amt=slab(c.type,u),id=nid(D.b);
+ D.b.push({id:id,cid:c.id,rid:rid,units:u,amt:amt,bdate:iso(0),due:iso(15),paid:null});save();render();
+ msg("m2","Bill #"+id+" for "+c.name+": "+u+" units, ₹"+amt.toFixed(2)+", due "+iso(15)+".",1)};
+$("f3").onsubmit=function(e){e.preventDefault();var id=+$("ps").value;if(!id)return msg("m3","There are no unpaid bills.",0);
+ var b=D.b.find(function(x){return x.id==id});b.paid=iso(0);save();render();msg("m3","Payment recorded for bill #"+id+".",1)};
+var names=["1. Consumer Registration","2. Meter Reading","3. Bill Calculation","4. Payment","5. Defaulter List"];
+names.forEach(function(n,i){var b=document.createElement("button");b.textContent=n;b.setAttribute("role","tab");b.onclick=function(){show(i)};$("tabs").appendChild(b)});
+function show(i){var bs=$("tabs").children;for(var k=0;k<5;k++){bs[k].setAttribute("aria-selected",k==i);$("p"+k).className=k==i?"on":""}
+ if(location.hash!=="#tab"+i)history.replaceState(null,"","#tab"+i)}
+var h=/^#tab([0-4])$/.exec(location.hash);show(h?+h[1]:0);
+render();setInterval(render,10000);
+</script>
+</body>
+</html>
