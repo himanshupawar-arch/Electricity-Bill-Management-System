@@ -173,3 +173,4 @@ A fresh install includes:
 | Access denied | Set `EBMS_DB_USER` and `EBMS_DB_PASS` |
 
 ---
+
